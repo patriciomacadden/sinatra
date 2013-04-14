@@ -664,19 +664,11 @@ module Sinatra
       render(:haml, template, options, locals, &block)
     end
 
-    def sass(template, options = {}, locals = {})
-      options.merge! :layout => false, :default_content_type => :css
-      render :sass, template, options, locals
-    end
-
-    def scss(template, options = {}, locals = {})
-      options.merge! :layout => false, :default_content_type => :css
-      render :scss, template, options, locals
-    end
-
-    def less(template, options = {}, locals = {})
-      options.merge! :layout => false, :default_content_type => :css
-      render :less, template, options, locals
+    %w(sass scss less).each do |engine|
+      define_method engine do |template, options = {}, locals = {}|
+        options.merge! :layout => false, :default_content_type => :css
+        render engine.to_sym, template, options, locals
+      end
     end
 
     def stylus(template, options={}, locals={})
@@ -684,9 +676,11 @@ module Sinatra
       render :styl, template, options, locals
     end
 
-    def builder(template = nil, options = {}, locals = {}, &block)
-      options[:default_content_type] = :xml
-      render_ruby(:builder, template, options, locals, &block)
+    %w(builder nokogiri).each do |engine|
+      define_method engine do |template = nil, options = {}, locals = {}, &block|
+        options[:default_content_type] = :xml
+        render_ruby(engine.to_sym, template, options, locals, &block)
+      end
     end
 
     def liquid(template, options = {}, locals = {}, &block)
@@ -716,11 +710,6 @@ module Sinatra
     def coffee(template, options = {}, locals = {})
       options.merge! :layout => false, :default_content_type => :js
       render :coffee, template, options, locals
-    end
-
-    def nokogiri(template = nil, options = {}, locals = {}, &block)
-      options[:default_content_type] = :xml
-      render_ruby(:nokogiri, template, options, locals, &block)
     end
 
     def slim(template, options = {}, locals = {}, &block)
